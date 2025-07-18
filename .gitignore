@@ -1,0 +1,4 @@
+project.env
+container.*
+image.*
+net.id
