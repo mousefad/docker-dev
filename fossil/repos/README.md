@@ -6,4 +6,3 @@ URL as follows:
 `repos/one.fossil` -> `http://fossil.dev.local:8080/one`
 `repos/two.fossil` -> `http://fossil.dev.local:8080/two`
 
-...and so on.

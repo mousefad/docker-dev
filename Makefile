@@ -20,7 +20,7 @@ image.% :
 	cp $(subst image.,,$@)/image.id $@
 
 net.id : Makefile
-	if docker network ls | grep -E "^[0-9a-f]+ +$(NETWORK_NAME) " > $@; then sed -i 's/ .*//' $@; echo network already exists ; else docker network create $(NETWORK_NAME) > $@ ; fi
+	if docker network ls | grep -E "^[0-9a-f]+ +$(NETWORK) " > $@; then sed -i 's/ .*//' $@; echo network already exists ; else docker network create $(NETWORK) > $@ ; fi
 
 clean : 
 	for d in $(SUBDOMAINS); do make -C $$d clean; done

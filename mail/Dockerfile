@@ -1,35 +1,55 @@
 FROM debian:latest
 
-# Install dependencies
-RUN apt-get update 
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y openssh-server vim postfix mutt tmux figlet mailutils curl
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+ARG MAIL_USER
+ARG TZ
+ARG DOMAIN
+ARG HOSTNAME
 
-# Configure sshd and users
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install general packages
+RUN apt-get update
+RUN apt-get install -y openssh-server vim postfix tzdata figlet mailutils sudo
+
+# Configure sshd
 RUN mkdir -p /var/run/sshd
 RUN sed -i '/^PermitRootLogin /d' /etc/ssh/sshd_config
 RUN echo "PermitRootLogin prohibit-password" >> /etc/ssh/sshd_config
 
-# Users with ssh public key auth
-RUN useradd -m mng -s /bin/bash
-RUN mkdir -p /home/mng/.ssh /home/mng/Mail
-COPY ./ssh_key.pub /home/mng/.ssh/authorized_keys
-COPY ./mutt/ /home/mng/.mutt/
-RUN chmod 700 /home/mng/.ssh /home/mng/Mail
-RUN chmod 600 /home/mng/.ssh/authorized_keys
-RUN chown -R mng:users /home/mng
+# Configure MAIL_USER to allow public-key auth
+RUN useradd -m $MAIL_USER -s /bin/bash
+COPY ./ssh/ /home/$MAIL_USER/.ssh/
+RUN chmod 700 /home/$MAIL_USER/.ssh
+RUN chmod 600 /home/$MAIL_USER/.ssh/authorized_keys
+RUN chown -R $MAIL_USER:users /home/$MAIL_USER
 
-# Config postfix
-RUN echo 'root: mng' >> /etc/aliases
-RUN newaliases
-RUN postconf 'mydomain = dev.local'
-RUN postconf 'mydestination = $myhostname, $mydomain, localhost, localhost.dev.local'
-RUN postconf 'mydestination = $myhostname, $mydomain, localhost, localhost.dev.local'
+# Set machie timezone
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+RUN dpkg-reconfigure -f noninteractive tzdata
 
-RUN figlet mail . dev . local > /etc/motd
+# Banner on login showing machine FQDN
+RUN echo $HOSTNAME.$DOMAIN | sed 's/\./ . /g' | figlet > /etc/motd
 
-# expose necessary ports
+# Expose necessary ports
 EXPOSE 22
+
+# Host specific setup...
+# Config postfix as receiver for domain
+RUN echo "root: $MAIL_USER" >> /etc/aliases
+RUN newaliases
+RUN postconf "mydomain = $DOMAIN"
+RUN postconf 'mydestination = $myhostname, $mydomain, localhost.$mydomain, localhost'
 EXPOSE 25
 
+# Mutt config for MAIL_USER
+RUN apt-get install -y curl mutt
+COPY ./mutt/ /home/$MAIL_USER/.mutt/
+RUN mkdir /home/$MAIL_USER/Mail
+RUN chmod 700 /home/$MAIL_USER/Mail
+RUN chown -R $MAIL_USER:users /home/$MAIL_USER
+
+# Clean up
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Run postfix in the background and then sshd logs to container output
 CMD service postfix start && /usr/sbin/sshd -D
