@@ -12,7 +12,6 @@ RUN postconf "maillog_file = /dev/stdout"
 RUN postconf "mydestination = localhost.localdomain, localhost"
 RUN postconf "relay_domains = dev.local"
 RUN postconf "transport_maps = hash:/etc/postfix/transport"
-RUN postconf "maillog_file = /dev/stdout"
 RUN echo 'dev.local smtp:[mail.dev.local]' > /etc/postfix/transport
 RUN postmap /etc/postfix/transport
 RUN cp /etc/resolv.conf /var/spool/postfix/etc/resolv.conf
@@ -24,6 +23,5 @@ RUN echo $HOSTNAME.$DOMAIN | sed 's/\./ . /g' | figlet > /etc/motd
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Run postfix in the background and then sshd logs to container output
-#CMD service postfix start && service ssh start && sudo $REGULAR_USER fossil server /var/fossil
-CMD service ssh start && /usr/sbin/postfix start-fg
+CMD nslookup $HOSTNAME.$DOMAIN && service ssh start && cp /etc/resolv.conf /var/spool/postfix/etc/resolv.conf && service postfix start && sudo $REGULAR_USER fossil server /var/fossil
 

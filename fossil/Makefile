@@ -19,18 +19,14 @@ RUN_ARGS += --volume $(CURDIR)/repos:/var/fossil:Z
 
 IMAGE_ID := $(shell [ -e image.id ] && cat image.id)
 
-.PHONY : clean log flog ssh clear-known
+.PHONY : clean log flog clear-known
 
 container.id : image.id ../net.id
 	$(DOCKER) run $(RUN_ARGS) $(IMAGE_TAG) > $@ || rm -f $@
 
-image.id : Dockerfile ssh/authorized_keys
+image.id : Dockerfile
 	$(DOCKER) build $(BUILD_ARGS) .
 	$(DOCKER) image ls $(IMAGE_TAG) | sed 1d | awk '{ print $$3 }' > $@
-
-ssh/authorized_keys : 
-	if [ ! -e ssh ]; then mkdir ssh; fi
-	cp $(SSH_PUB_KEY) $@
 
 log : container.id
 	$(DOCKER) container logs $(CONTAINER_NAME)
@@ -47,4 +43,3 @@ clear-known :
 clean : 
 	if [ -e container.id ]; then $(DOCKER) container kill $(CONTAINER_NAME) ; $(DOCKER) container rm $(CONTAINER_NAME) ; rm -f container.id ; fi
 	if [ -e image.id ]; then $(DOCKER) image rm $(IMAGE_ID) ; rm -f image.id ; fi
-	rm -f ssh/authorized_keys
