@@ -1,4 +1,4 @@
 container.id
 image.id
-ssh_key.pub
-repos/*.fossil
+ssh
+repos/**

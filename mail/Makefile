@@ -6,7 +6,7 @@ CONTAINER_NAME = dev-$(HOST)
 FQDN = $(HOST).$(DOMAIN)
 
 BUILD_ARGS = --tag $(IMAGE_TAG) 
-BUILD_ARGS += --build-arg MAIL_USER=$(MAIL_USER) 
+BUILD_ARGS += --build-arg REGULAR_USER=$(REGULAR_USER) 
 BUILD_ARGS += --build-arg TZ=$(TZ) 
 BUILD_ARGS += --build-arg DOMAIN=$(DOMAIN)
 BUILD_ARGS += --build-arg HOSTNAME=$(HOST)
@@ -28,6 +28,7 @@ image.id : Dockerfile ssh/authorized_keys
 	$(DOCKER) image ls $(IMAGE_TAG) | sed 1d | awk '{ print $$3 }' > $@
 
 ssh/authorized_keys : 
+	if [ ! -e ssh ]; then mkdir ssh; fi
 	cp $(SSH_PUB_KEY) $@
 
 log : container.id
@@ -37,10 +38,10 @@ flog : container.id
 	$(DOCKER) container logs --follow $(CONTAINER_NAME)
 
 ssh : clear-known
-	ssh -o StrictHostKeyChecking=accept-new $(MAIL_USER)@$(shell $(DOCKER) network inspect dev | jq -r '.[0].Containers | .[] | select(.Name == "dev-mail") | .IPv4Address' | sed 's|/.*||')
+	ssh -o StrictHostKeyChecking=accept-new $(REGULAR_USER)@$(shell $(DOCKER) network inspect dev | jq -r '.[0].Containers | .[] | select(.Name == "$(CONTAINER_NAME)") | .IPv4Address' | sed 's|/.*||')
 
 clear-known :
-	-sed -i '/$(shell $(DOCKER) network inspect dev | jq -r '.[0].Containers | .[] | select(.Name == "dev-mail") | .IPv4Address' | sed 's|/.*||')/d' ~/.ssh/known_hosts
+	-sed -i '/$(shell $(DOCKER) network inspect dev | jq -r '.[0].Containers | .[] | select(.Name == "$(CONTAINER_NAME)") | .IPv4Address' | sed 's|/.*||')/d' ~/.ssh/known_hosts
 
 clean : 
 	if [ -e container.id ]; then $(DOCKER) container kill $(CONTAINER_NAME) ; $(DOCKER) container rm $(CONTAINER_NAME) ; rm -f container.id ; fi
