@@ -17,7 +17,11 @@ container.% : image.% net.id
 	make -C $(subst container.,,$@) container.id
 	cp $(subst container.,,$@)/container.id $@
 
-image.% :
+base.image :
+	make -C base image.id
+	cp base/image.id $@
+
+image.% : base.image
 	make -C $(subst image.,,$@) image.id
 	cp $(subst image.,,$@)/image.id $@
 
@@ -25,6 +29,6 @@ net.id : Makefile
 	if $(DOCKER) network ls | grep -E "^[0-9a-f]+ +$(NETWORK) " > $@; then sed -i 's/ .*//' $@; echo network already exists ; else $(DOCKER) network create $(NETWORK) > $@ ; fi
 
 clean : 
-	for d in $(SUBDOMAINS); do make -C $$d clean; done
+	for d in $(SUBDOMAINS) base; do make -C $$d clean; done
 	if [ -e net.id ]; then $(DOCKER) network rm $(shell cat net.id); fi
-	rm -f net.id $(CONTAINER_FLAGS) $(IMAGE_FLAGS)
+	rm -f net.id $(CONTAINER_FLAGS) $(IMAGE_FLAGS) base.image

@@ -7,9 +7,9 @@ FQDN = $(HOST).$(DOMAIN)
 
 BUILD_ARGS = --tag $(IMAGE_TAG) 
 BUILD_ARGS += --build-arg REGULAR_USER=$(REGULAR_USER) 
-BUILD_ARGS += --build-arg TZ=$(TZ) 
 BUILD_ARGS += --build-arg DOMAIN=$(DOMAIN)
 BUILD_ARGS += --build-arg HOSTNAME=$(HOST)
+BUILD_ARGS += --build-arg SUBNET=$(shell docker network inspect $(NETWORK) | jq -r '.[0].IPAM.Config[0].Subnet')
 
 RUN_ARGS = --detach
 RUN_ARGS += --name $(CONTAINER_NAME)
@@ -23,13 +23,9 @@ IMAGE_ID := $(shell [ -e image.id ] && cat image.id)
 container.id : image.id ../net.id
 	$(DOCKER) run $(RUN_ARGS) $(IMAGE_TAG) > $@ || rm -f $@
 
-image.id : Dockerfile ssh/authorized_keys
+image.id : Dockerfile
 	$(DOCKER) build $(BUILD_ARGS) .
 	$(DOCKER) image ls $(IMAGE_TAG) | sed 1d | awk '{ print $$3 }' > $@
-
-ssh/authorized_keys : 
-	if [ ! -e ssh ]; then mkdir ssh; fi
-	cp $(SSH_PUB_KEY) $@
 
 log : container.id
 	$(DOCKER) container logs $(CONTAINER_NAME)
@@ -37,7 +33,7 @@ log : container.id
 flog : container.id
 	$(DOCKER) container logs --follow $(CONTAINER_NAME)
 
-ssh : clear-known
+ssh : clear-known container.id
 	ssh -o StrictHostKeyChecking=accept-new $(REGULAR_USER)@$(shell $(DOCKER) network inspect dev | jq -r '.[0].Containers | .[] | select(.Name == "$(CONTAINER_NAME)") | .IPv4Address' | sed 's|/.*||')
 
 clear-known :
@@ -46,4 +42,3 @@ clear-known :
 clean : 
 	if [ -e container.id ]; then $(DOCKER) container kill $(CONTAINER_NAME) ; $(DOCKER) container rm $(CONTAINER_NAME) ; rm -f container.id ; fi
 	if [ -e image.id ]; then $(DOCKER) image rm $(IMAGE_ID) ; rm -f image.id ; fi
-	rm -f ssh/authorized_keys

@@ -7,7 +7,6 @@ FQDN = $(HOST).$(DOMAIN)
 
 BUILD_ARGS = --tag $(IMAGE_TAG) 
 BUILD_ARGS += --build-arg REGULAR_USER=$(REGULAR_USER) 
-BUILD_ARGS += --build-arg TZ=$(TZ) 
 BUILD_ARGS += --build-arg DOMAIN=$(DOMAIN)
 BUILD_ARGS += --build-arg HOSTNAME=$(HOST)
 

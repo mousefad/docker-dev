@@ -1,4 +1,5 @@
 project.env
 container.*
 image.*
+base.image
 net.id
