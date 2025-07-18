@@ -1,4 +1,4 @@
-DOMAIN = dev.local
+DOMAIN = dev.do
 NETWORK = dev
 TZ = Europe/London
 SSH_PUB_KEY = ~/.ssh/local.pub
