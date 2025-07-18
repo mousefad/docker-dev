@@ -1,12 +1,14 @@
 include setup.mk
 
-SUBDOMAINS = mail fossil
+SUBDOMAINS = mail fossil gitlab
 
 CONTAINER_FLAGS = $(addprefix container.,$(SUBDOMAINS))
-IMAGE_FLAGS = $(addprefix image.,$(SUBDOMAINS))
+IMAGE_FLAGS = $(addprefix image.,$(SUBDOMAINS)) base.image
 
 
 .PHONY : all images
+
+.PRECIOUS : $(IMAGE_FLAGS)
 
 all : $(CONTAINER_FLAGS)
 	$(DOCKER) container ls

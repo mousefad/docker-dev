@@ -48,5 +48,7 @@ clear-known :
 	-sed -i '/$(shell $(DOCKER) network inspect dev | jq -r '.[0].Containers | .[] | select(.Name == "$(CONTAINER_NAME)") | .IPv4Address' | sed 's|/.*||')/d' ~/.ssh/known_hosts
 
 clean : 
-	if [ -e container.id ]; then $(DOCKER) container kill $(CONTAINER_NAME) ; $(DOCKER) container rm $(CONTAINER_NAME) ; rm -f container.id ; fi
-	if [ -e image.id ]; then $(DOCKER) image rm $(IMAGE_ID) ; rm -f image.id ; fi
+	-$(DOCKER) container kill $(CONTAINER_NAME)
+	-$(DOCKER) container rm $(CONTAINER_NAME) 
+	if [ -e image.id ]; then $(DOCKER) image rm $(IMAGE_ID) ; fi
+	rm -f container.id image.id
