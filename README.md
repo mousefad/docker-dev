@@ -19,14 +19,16 @@ mail/           - Mail server using postfix which will accept mail for the clust
                   as `@dev.local`. Setup account `dev@dev.local`. Read mail with 
                   `mutt` for now (implement pop3 or IMAP or something later).
 fossil/         - Host for Fossil repos.
+gitlab/         - gitlab instance with postgres and redis
 
 
 To Do
 -----
 
-gitlab/         - gitlab instance with postgres and redis
-jenkins/        - jenkins server and build node (docker compose)
 registry/       - docker registry for source images and build artifacts
+jenkins/        - jenkins server and build node (docker compose)
 template/       - template docker setup using a Makefile
 webui/          - AI models in a container
+
+
 
