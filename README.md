@@ -18,6 +18,7 @@ Containers
 mail/           - Mail server using postfix which will accept mail for the cluster
                   as `@dev.local`. Setup account `dev@dev.local`. Read mail with 
                   `mutt` for now (implement pop3 or IMAP or something later).
+fossil/         - Host for Fossil repos.
 
 
 To Do

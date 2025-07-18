@@ -1,6 +1,6 @@
 include setup.mk
 
-SUBDOMAINS = mail
+SUBDOMAINS = mail fossil
 CONTAINER_FLAGS = $(addprefix container.,$(SUBDOMAINS))
 IMAGE_FLAGS = $(addprefix image.,$(SUBDOMAINS))
 
