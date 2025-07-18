@@ -14,7 +14,6 @@ RUN postconf "relay_domains = dev.local"
 RUN postconf "transport_maps = hash:/etc/postfix/transport"
 RUN echo 'dev.local smtp:[mail.dev.local]' > /etc/postfix/transport
 RUN postmap /etc/postfix/transport
-RUN cp /etc/resolv.conf /var/spool/postfix/etc/resolv.conf
 
 # Banner on login showing machine FQDN
 RUN echo $HOSTNAME.$DOMAIN | sed 's/\./ . /g' | figlet > /etc/motd
