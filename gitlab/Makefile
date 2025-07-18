@@ -15,6 +15,7 @@ RUN_ARGS = --detach
 RUN_ARGS += --name $(CONTAINER_NAME)
 RUN_ARGS += --hostname $(FQDN)
 RUN_ARGS += --network $(NETWORK)
+RUN_ARGS += --publish $(PORT_GITLAB_SSH):22
 RUN_ARGS += --publish $(PORT_GITLAB_HTTP):80
 RUN_ARGS += --publish $(PORT_GITLAB_HTTPS):443
 RUN_ARGS += --volume $(CURDIR)/config:/etc/gitlab:z
